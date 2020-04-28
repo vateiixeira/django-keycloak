@@ -88,7 +88,7 @@ def update_or_create_user_and_oidc_profile(client, id_token_object):
     if OpenIdConnectProfileModel.is_remote:
         oidc_profile, _ = OpenIdConnectProfileModel.objects.\
             update_or_create(
-                sub=id_token_object['sub'],
+                sub=id_token_object['preferred_username'],
                 defaults={
                     'realm': client.realm
                 }
@@ -112,7 +112,7 @@ def update_or_create_user_and_oidc_profile(client, id_token_object):
         )
 
         oidc_profile, _ = OpenIdConnectProfileModel.objects.update_or_create(
-            sub=id_token_object['sub'],
+            sub=id_token_object['preferred_username'],
             defaults={
                 'realm': client.realm,
                 'user': user
