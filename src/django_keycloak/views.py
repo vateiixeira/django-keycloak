@@ -77,8 +77,12 @@ class LoginComplete(RedirectView):
                 or request.GET['state'] != request.session['oidc_state']:
             # Missing or incorrect state; login again.
             return HttpResponseRedirect(reverse('keycloak_login'))
-
-        nonce = Nonce.objects.get(state=request.GET['state'])
+        
+        try:
+            nonce = Nonce.objects.get(state=request.GET['state'])
+        except Nonce.DoesNotExist:
+            return HttpResponseRedirect(reverse('keycloak_login'))
+        
 
         user = authenticate(request=request,
                             code=request.GET['code'],
