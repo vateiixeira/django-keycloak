@@ -211,6 +211,8 @@ def _update_or_create(client, token_response, initiate_time):
     """
     issuer = django_keycloak.services.realm.get_issuer(client.realm)
 
+    import json
+    logger.info(json.dumps(token_response))
     token_response_key = 'id_token' if 'id_token' in token_response \
         else 'access_token'
 
