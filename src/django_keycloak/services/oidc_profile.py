@@ -216,12 +216,16 @@ def _update_or_create(client, token_response, initiate_time):
     token_response_key = 'id_token' if 'id_token' in token_response \
         else 'access_token'
 
+    logger.info("GOT TOKEN: %s", token_response[token_response_key])
+    logger.info("GOT id_token: %s", token_response['id_token'])
+    logger.info("GOT access_token: %s", token_response['access_token'])
     token_object = client.openid_api_client.decode_token(
         token=token_response[token_response_key],
         key=client.realm.certs,
         algorithms=client.openid_api_client.well_known[
             'id_token_signing_alg_values_supported'],
-        issuer=issuer
+        issuer=issuer,
+        access_token=token_response['access_token']
     )
 
     oidc_profile = update_or_create_user_and_oidc_profile(
