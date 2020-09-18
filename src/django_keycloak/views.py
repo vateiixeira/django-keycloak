@@ -27,6 +27,7 @@ from django.views.generic.base import (
 
 from django_keycloak.models import Nonce
 from django_keycloak.auth import remote_user_login
+from jose import jwt
 
 
 logger = logging.getLogger(__name__)
@@ -83,10 +84,12 @@ class LoginComplete(RedirectView):
         except Nonce.DoesNotExist:
             return HttpResponseRedirect(reverse('keycloak_login'))
         
-
-        user = authenticate(request=request,
-                            code=request.GET['code'],
-                            redirect_uri=nonce.redirect_uri)
+        try:
+            user = authenticate(request=request,
+                                code=request.GET['code'],
+                                redirect_uri=nonce.redirect_uri)
+        except jwt.ExpiredSignatureError:
+            return HttpResponseRedirect(reverse('keycloak_login'))
 
         RemoteUserModel = get_remote_user_model()
         if isinstance(user, RemoteUserModel):
