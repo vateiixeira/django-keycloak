@@ -89,6 +89,7 @@ class LoginComplete(RedirectView):
                                 code=request.GET['code'],
                                 redirect_uri=nonce.redirect_uri)
         except jwt.ExpiredSignatureError:
+            nonce.delete()
             if hasattr(request.user, 'oidc_profile'):
                 request.realm.client.openid_api_client.logout(
                     request.user.oidc_profile.refresh_token
@@ -105,11 +106,7 @@ class LoginComplete(RedirectView):
                 ])
 
             logout(request)
-
-            if settings.LOGOUT_REDIRECT_URL:
-                return resolve_url(settings.LOGOUT_REDIRECT_URL)
-
-            return reverse('keycloak_login')
+            return HttpResponseRedirect(reverse('keycloak_login'))
 
         RemoteUserModel = get_remote_user_model()
         if isinstance(user, RemoteUserModel):
