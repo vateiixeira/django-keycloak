@@ -4,7 +4,7 @@ from datetime import datetime
 
 from django.test import TestCase
 from freezegun import freeze_time
-from keycloak.openid_connect import KeycloakOpenidConnect
+from django_keycloak.python_keycloak_client.openid_connect import KeycloakOpenidConnect
 
 from django_keycloak.factories import OpenIdConnectProfileFactory
 from django_keycloak.tests.mixins import MockTestCaseMixin

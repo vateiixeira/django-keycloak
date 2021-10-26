@@ -9,7 +9,7 @@ from jose.exceptions import (
     JWTClaimsError,
     JWTError,
 )
-from keycloak.exceptions import KeycloakClientError
+from django_keycloak.python_keycloak_client.exceptions import KeycloakClientError
 
 import django_keycloak.services.oidc_profile
 
