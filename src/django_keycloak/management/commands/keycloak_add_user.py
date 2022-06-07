@@ -22,7 +22,7 @@ def realm(name):
 def user(username):
     UserModel = get_user_model()
     try:
-        return UserModel.objects.get(username=username)
+        return UserModel.objects.get(email=username)
     except UserModel.DoesNotExist:
         raise TypeError('User does not exist')
 

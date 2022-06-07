@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 from django.utils.module_loading import import_string
-from django_keycloak.python_keycloak_client.exceptions import KeycloakClientError
+from keycloak.exceptions import KeycloakClientError
 
 from django_keycloak.services.exceptions import TokensExpired
 from django_keycloak.remote_user import KeycloakRemoteUser
@@ -84,11 +84,10 @@ def update_or_create_user_and_oidc_profile(client, id_token_object):
     """
 
     OpenIdConnectProfileModel = get_openid_connect_profile_model()
-
     if OpenIdConnectProfileModel.is_remote:
         oidc_profile, _ = OpenIdConnectProfileModel.objects.\
             update_or_create(
-                sub=id_token_object['preferred_username'],
+                sub=id_token_object['sub'],
                 defaults={
                     'realm': client.realm
                 }
@@ -103,20 +102,21 @@ def update_or_create_user_and_oidc_profile(client, id_token_object):
         UserModel = get_user_model()
         email_field_name = UserModel.get_email_field_name()
         user, _ = UserModel.objects.update_or_create(
-            username=id_token_object['preferred_username'],
+            #extra_data__oidc_id = id_token_object['sub'],
+            email =  id_token_object.get('email', ''),
             defaults={
-                email_field_name: id_token_object.get('email', ''),
                 'first_name': id_token_object.get('given_name', ''),
                 'last_name': id_token_object.get('family_name', '')
             }
         )
 
         oidc_profile, _ = OpenIdConnectProfileModel.objects.update_or_create(
-            sub=id_token_object['preferred_username'],
+            user = user,
+            realm = client.realm,
             defaults={
-                'realm': client.realm,
-                'user': user
-            }
+                'sub':id_token_object['sub'],
+                }
+
         )
 
     return oidc_profile
@@ -211,22 +211,15 @@ def _update_or_create(client, token_response, initiate_time):
     """
     issuer = django_keycloak.services.realm.get_issuer(client.realm)
 
-    import json
-    logger.info(json.dumps(token_response))
     token_response_key = 'id_token' if 'id_token' in token_response \
         else 'access_token'
 
-    logger.info("GOT TOKEN: %s", token_response[token_response_key])
-    logger.info("GOT id_token: %s", token_response['id_token'])
-    logger.info("GOT access_token: %s", token_response['access_token'])
-    token_object = client.openid_api_client.decode_token(
-        token=token_response[token_response_key],
-        key=client.realm.certs,
-        algorithms=client.openid_api_client.well_known[
-            'id_token_signing_alg_values_supported'],
-        issuer=issuer,
-        access_token=token_response['access_token']
-    )
+    token_object = client.openid_api_client.decode_token( 
+        token=token_response[token_response_key], 
+        access_token=token_response['access_token'], 
+        key=client.realm.certs, 
+        algorithms=client.openid_api_client.well_known['id_token_signing_alg_values_supported'], 
+        issuer=issuer )
 
     oidc_profile = update_or_create_user_and_oidc_profile(
         client=client,
@@ -250,10 +243,10 @@ def update_tokens(token_model, token_response, initiate_time):
         seconds=token_response['expires_in'])
     refresh_expires_before = initiate_time + timedelta(
         seconds=token_response['refresh_expires_in'])
-
+    #print(token_response)
     token_model.access_token = token_response['access_token']
     token_model.expires_before = expires_before
-    token_model.refresh_token = token_response['refresh_token']
+    token_model.refresh_token = token_response.get('refresh_token',None)
     token_model.refresh_expires_before = refresh_expires_before
 
     token_model.save(update_fields=['access_token',

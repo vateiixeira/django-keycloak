@@ -53,6 +53,7 @@ class BaseKeycloakMiddleware(MiddlewareMixin):
             return response
 
         jwt = request.user.oidc_profile.jwt
+        print('JWT received iam: ',jwt)
         if not jwt:
             return response
 

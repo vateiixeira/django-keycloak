@@ -3,8 +3,8 @@ import mock
 from datetime import datetime
 
 from django.test import TestCase
-from django_keycloak.python_keycloak_client.openid_connect import KeycloakOpenidConnect
-from django_keycloak.python_keycloak_client.authz import KeycloakAuthz
+from keycloak.openid_connect import KeycloakOpenidConnect
+from keycloak.authz import KeycloakAuthz
 
 from django_keycloak.factories import OpenIdConnectProfileFactory
 from django_keycloak.tests.mixins import MockTestCaseMixin

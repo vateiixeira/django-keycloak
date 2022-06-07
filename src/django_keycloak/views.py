@@ -46,7 +46,7 @@ class Login(RedirectView):
         authorization_url = self.request.realm.client.openid_api_client\
             .authorization_url(
                 redirect_uri=nonce.redirect_uri,
-                scope='openid',
+                scope='openid email',
                 state=str(nonce.state)
             )
 
@@ -58,6 +58,7 @@ class Login(RedirectView):
             )
 
         logger.debug(authorization_url)
+        #print('redirect_url: ',self.request.build_absolute_uri(location=reverse('keycloak_login_complete')))
 
         return authorization_url
 
@@ -77,16 +78,13 @@ class LoginComplete(RedirectView):
                 or request.GET['state'] != request.session['oidc_state']:
             # Missing or incorrect state; login again.
             return HttpResponseRedirect(reverse('keycloak_login'))
-        
-        try:
-            nonce = Nonce.objects.get(state=request.GET['state'])
-        except Nonce.DoesNotExist:
-            return HttpResponseRedirect(reverse('keycloak_login'))
-        
+
+        nonce = Nonce.objects.get(state=request.GET['state'])
 
         user = authenticate(request=request,
                             code=request.GET['code'],
                             redirect_uri=nonce.redirect_uri)
+
 
         RemoteUserModel = get_remote_user_model()
         if isinstance(user, RemoteUserModel):
@@ -94,9 +92,11 @@ class LoginComplete(RedirectView):
         else:
             login(request, user)
 
+
         nonce.delete()
 
-        return HttpResponseRedirect(nonce.next_path or '/')
+        #return HttpResponseRedirect(nonce.next_path or '/')
+        return HttpResponseRedirect(nonce.next_path or '/admin')
 
 
 class Logout(RedirectView):

@@ -9,7 +9,7 @@ from jose.exceptions import (
     JWTClaimsError,
     JWTError,
 )
-from django_keycloak.python_keycloak_client.exceptions import KeycloakClientError
+from keycloak.exceptions import KeycloakClientError
 
 import django_keycloak.services.oidc_profile
 
@@ -28,7 +28,7 @@ class KeycloakAuthorizationBase(object):
         except UserModel.DoesNotExist:
             return None
 
-        if user.oidc_profile.refresh_expires_before is not None and user.oidc_profile.refresh_expires_before > timezone.now():
+        if user.oidc_profile.refresh_expires_before and user.oidc_profile.refresh_expires_before > timezone.now():
             return user
 
         return None
