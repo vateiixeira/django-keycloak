@@ -50,6 +50,7 @@ class Users(KeycloakAdminBase):
             if key in kwargs:
                 payload[to_camel_case(key)] = kwargs[key]
 
+        print(payload)
         return self._client.post(
             url=self._client.get_full_url(
                 self.get_path('collection', realm=self._realm_name)
