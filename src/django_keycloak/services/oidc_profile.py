@@ -9,7 +9,7 @@ from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.utils import timezone
 from django.utils.module_loading import import_string
-from keycloak.exceptions import KeycloakError
+from keycloak.exceptions import KeycloakClientError
 
 from django_keycloak.services.exceptions import TokensExpired
 from django_keycloak.remote_user import KeycloakRemoteUser
@@ -133,7 +133,7 @@ def get_remote_user_from_profile(oidc_profile):
         userinfo = oidc_profile.realm.client.openid_api_client.userinfo(
             token=oidc_profile.access_token
         )
-    except KeycloakError:
+    except KeycloakClientError:
         return None
 
     # Get the user from the KEYCLOAK_REMOTE_USER_MODEL in the settings

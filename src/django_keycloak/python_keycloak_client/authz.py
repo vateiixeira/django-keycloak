@@ -8,7 +8,7 @@ except ImportError:
     from urllib import urlencode  # noqa: F401
 
 from django_keycloak.python_keycloak_client.mixins import WellKnownMixin
-from django_keycloak.python_keycloak_client.exceptions import KeycloakError
+from django_keycloak.python_keycloak_client.exceptions import KeycloakClientError
 
 PATH_ENTITLEMENT = "auth/realms/{}/authz/entitlement/{}"
 
@@ -118,7 +118,7 @@ class KeycloakAuthz(WellKnownMixin, object):
                 token = response.get('refresh_token')
                 decoded_token = self._decode_token(token.split('.')[1])
                 authz_info = decoded_token.get('authorization', {})
-        except KeycloakError as error:
+        except KeycloakClientError as error:
             self.logger.warning(str(error))
         return authz_info
 

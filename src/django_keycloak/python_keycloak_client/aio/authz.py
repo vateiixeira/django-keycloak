@@ -4,7 +4,7 @@ from django_keycloak.python_keycloak_client.authz import (
     PATH_WELL_KNOWN,
     urlencode,
 )
-from django_keycloak.python_keycloak_client.exceptions import KeycloakError
+from django_keycloak.python_keycloak_client.exceptions import KeycloakClientError
 
 __all__ = (
     'KeycloakAuthz',
@@ -67,7 +67,7 @@ class KeycloakAuthz(WellKnownMixin, SyncKeycloakAuthz):
                 token = response.get('refresh_token')
                 decoded_token = self._decode_token(token.split('.')[1])
                 authz_info = decoded_token.get('authorization', {})
-        except KeycloakError as error:
+        except KeycloakClientError as error:
             self.logger.warning(str(error))
         return authz_info
 

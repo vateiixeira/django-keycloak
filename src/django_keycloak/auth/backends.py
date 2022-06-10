@@ -9,7 +9,7 @@ from jose.exceptions import (
     JWTClaimsError,
     JWTError,
 )
-from keycloak.exceptions import KeycloakError
+from keycloak.exceptions import KeycloakClientError
 
 import django_keycloak.services.oidc_profile
 
@@ -129,7 +129,7 @@ class KeycloakPasswordCredentialsBackend(KeycloakAuthorizationBase):
                     username=username,
                     password=password
                 )
-        except KeycloakError:
+        except KeycloakClientError:
             logger.debug('KeycloakPasswordCredentialsBackend: failed to '
                          'authenticate.')
         else:
